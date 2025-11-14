@@ -11,7 +11,7 @@ const ServiceItem = ({ icon: Icon, title, description }) => (
     
     <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
     
-    <p className="text-[#737373] font-medium leading-[20px]">{description}</p>
+    <p className="text-[#737373] font-medium leading-[20px] max-w-[250px] md:max-w-none">{description}</p>
   </div>
 );
 
@@ -39,9 +39,9 @@ const ServicesSection = () => {
       
       {/* Başlık Bölümü */}
       <div className="header-content text-center mb-12"style={{ fontFamily: 'Montserrat' }}>
-        <p className="text-lg font-medium leading-[30px] text-[#737373] ">Featured Products</p>
+        <p className="text-xl md:text-lg font-medium leading-[30px] text-[#737373] text-center md:block">Featured Products</p>
         <h2 className="text-3xl font-extrabold text-gray-800 mt-1 mb-3">THE BEST SERVICES</h2>
-        <p className="text-[#737373] font-medium text-lg">Problems trying to resolve the conflict between</p>
+       <p className="text-[#737373] font-medium text-lg max-w-[250px] mx-auto text-center md:max-w-full">Problems trying to resolve the conflict between</p>
       </div>
 
       <div className="services-grid max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-4  " style={{ fontFamily: 'Montserrat' }}>

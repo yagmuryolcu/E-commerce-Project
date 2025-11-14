@@ -1,11 +1,13 @@
-import React from 'react';
-import { Phone, Mail, Instagram, Youtube, Facebook, Twitter, Search, ShoppingCart, Heart, ChevronDown, User } from 'lucide-react';
+import React, { useState } from 'react'; 
+
+import { Phone, Mail, Instagram, Youtube, Facebook, Twitter, Search, ShoppingCart, Heart, ChevronDown, User, Menu, X } from 'lucide-react';
 
 export default function Header() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false); 
   return (
     <div className="w-full">
       {/* Lacivert kısım*/}
-      <div className="bg-slate-800 text-white py-2">
+      <div className="bg-slate-800 text-white py-5 hidden md:block">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center gap-6">
@@ -45,9 +47,9 @@ export default function Header() {
               Bandage
             </div>
 
-            {/* Navbar */}
-            <nav className="flex items-center gap-6">
-              <a href="#Home" className="text-gray-600 hover:text-blue-300 font-medium">Home</a>
+            {/* Navbar (desktop) */}
+            <nav className="hidden md:flex items-center gap-6 ml-0">
+              <a href="#HomePage" className="text-gray-600 hover:text-blue-300 font-medium">Home</a>
               <a href="#" className="text-gray-600 hover:text-blue-300 font-medium flex items-center gap-1">
                 Shop <ChevronDown size={16} />
               </a>
@@ -57,25 +59,37 @@ export default function Header() {
               <a href="#Pages" className="text-gray-600 hover:text-blue-300 font-medium">Pages</a>
             </nav>
 
-            {/* Alışveriş sepeti kısım sağ */}
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-[#23A6F0] hover:text-blue-300 font-medium flex items-center gap-1">
+            {/* Alışveriş sepeti sağ */}
+            <div className="flex items-center gap-4 text-black md:text-[#23A6F0]">
+                <a href="#" className=" hover:text-blue-300 font-medium flex items-center gap-1">
                 <User size={18} />
-                <span className="hidden sm:inline">Login / Register</span>
+                <span className="hidden md:block">Login / Register</span>
               </a>
-              <button className="text-[#23A6F0] hover:text-blue-300">
+              <button className=" hover:text-blue-300">
                 <Search size={20} />
               </button>
-              <button className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-1">
+              <button className="hover:text-blue-300 flex items-center gap-1">
                 <ShoppingCart size={20} />
-                <span className="text-sm">1</span>
+                <span className="text-sm hidden md:block">1</span>
               </button>
-              <button className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-1">
+              <button className="hidden md:flex hover:text-blue-300 flex items-center gap-1">
                 <Heart size={20} />
-                <span className="text-sm">1</span>
+                <span className="text-sm hidden md:block">1</span>
               </button>
+                <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+         {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
             </div>
           </div>
+
+          {/*  Mobilde*/}
+          <nav className="flex flex-col md:hidden items-center gap-3 mt-6">
+            <a href="#HomePage" className="text-gray-600 hover:text-blue-300 font-medium">Home</a>
+            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Product</a>
+            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Pricing</a>
+            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Contact</a>
+          </nav>
+
         </div>
       </div>
     </div>

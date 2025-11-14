@@ -41,7 +41,7 @@ export default function BrandLogo() {
   return (
     <div className="w-full bg-white py-18 mt-5 mb-5">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-24">
+<div className="flex flex-col md:flex-row items-center justify-center gap-20 md:gap-24">
           
           <LogoLink 
             src={HooliLogo} 

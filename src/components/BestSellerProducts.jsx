@@ -28,18 +28,20 @@ export default function BestSellerProducts() {
   return (
     <div className="w-full bg-white py-16">
       <div className="container mx-auto px-4">
-        {/* bestseller yazısı */}
+
+        {/* Başlık */}
         <div className="text-center mb-12" style={{ fontFamily: 'Montserrat' }}>
-          <p className="text-gray-500 text-sm mb-2">Featured Products</p>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">BESTSELLER PRODUCTS</h2>
-          <p className="text-gray-500 text-sm">Problems trying to resolve the conflict between</p>
+          <p className="text-[#737373] text-m leading-[30px] font-semibold mb-2  hidden md:block">Featured Products</p>
+         <h2 className="text-3xl font-bold text-gray-900 mb-3 max-w-[200px] mx-auto text-center md:max-w-full">BESTSELLER PRODUCTS</h2>
+          <p className="text-gray-500 text-sm max-w-[200px] md:max-w-full mx-auto md:mx-0">Problems trying to resolve the conflict between</p>
         </div>
 
-        {/* ürünler*/}
-        <div className="grid grid-cols-5 gap-8 mb-12">
-          {products.map((product) => (
-            <div key={product.id} className="group cursor-pointer">
-              {/* resimler */}
+        {/* Ürünler - Mobilde 5, Desktop'ta 10 */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+          {products.slice(0, 5).map((product) => (
+            <div key={product.id} className="group cursor-pointer px-2 md:px-0">
+              
+              {/* resim */}
               <div className="bg-gray-100 overflow-hidden mb-4 aspect-[3/4]">
                 <img 
                   src={product.image} 
@@ -48,12 +50,11 @@ export default function BestSellerProducts() {
                 />
               </div>
 
-              {/* ürün detay*/}
+              {/* ürün detay */}
               <div className="text-center">
                 <h3 className="text-gray-900 font-bold mb-2">{product.title}</h3>
                 <p className="text-gray-500 text-sm mb-3">{product.department}</p>
-                
-               
+
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-gray-400 line-through">${product.originalPrice}</span>
                   <span className="text-green-600 font-bold">${product.salePrice}</span>
@@ -63,25 +64,54 @@ export default function BestSellerProducts() {
           ))}
         </div>
 
-     
-            <div className="text-center">
-         <button
-        className="border-2 px-8 py-3 font-bold transition-all duration-300 rounded-lg"
+        {/* İkinci 5 ürün - Sadece desktop'ta görüncek */}
+        <div className="hidden md:grid md:grid-cols-5 gap-8 mb-12">
+          {products.slice(5, 10).map((product) => (
+            <div key={product.id} className="group cursor-pointer">
+              
+              {/* resim */}
+              <div className="bg-gray-100 overflow-hidden mb-4 aspect-[3/4]">
+                <img 
+                  src={product.image} 
+                  alt={product.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              </div>
+
+              {/* ürün detay */}
+              <div className="text-center">
+                <h3 className="text-gray-900 font-bold mb-2">{product.title}</h3>
+                <p className="text-gray-500 text-sm mb-3">{product.department}</p>
+
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-gray-400 line-through">${product.originalPrice}</span>
+                  <span className="text-green-600 font-bold">${product.salePrice}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <button
+            className="border-2 px-8 py-3 font-bold transition-all duration-300 rounded-lg"
             style={{
-            borderColor: '#23A6F0',
-            color: '#23A6F0',
+              borderColor: '#23A6F0',
+              color: '#23A6F0',
             }}
             onMouseOver={e => {
-            e.currentTarget.style.backgroundColor = '#23A6F0';
-            e.currentTarget.style.color = '#fff';
+              e.currentTarget.style.backgroundColor = '#23A6F0';
+              e.currentTarget.style.color = '#fff';
             }}
             onMouseOut={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = '#23A6F0';
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = '#23A6F0';
             }}
-        >  LOAD MORE PRODUCTS
-    </button>
-    </div>
+          >
+            LOAD MORE PRODUCTS
+          </button>
+        </div>
+
       </div>
     </div>
   );
