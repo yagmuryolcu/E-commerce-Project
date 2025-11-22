@@ -1,5 +1,5 @@
 import React, { useState } from 'react'; 
-
+import { Link } from 'react-router-dom';
 import { Phone, Mail, Instagram, Youtube, Facebook, Twitter, Search, ShoppingCart, Heart, ChevronDown, User, Menu, X } from 'lucide-react';
 
 export default function Header() {
@@ -49,15 +49,16 @@ export default function Header() {
 
             {/* Navbar (desktop) */}
             <nav className="hidden md:flex items-center gap-6 ml-0">
-              <a href="#HomePage" className="text-gray-600 hover:text-blue-300 font-medium">Home</a>
-              <a href="#" className="text-gray-600 hover:text-blue-300 font-medium flex items-center gap-1">
-                Shop <ChevronDown size={16} />
-              </a>
-              <a href="#About" className="text-gray-600 hover:text-blue-300 font-medium">About</a>
-              <a href="#Blog" className="text-gray-600 hover:text-blue-300 font-medium">Blog</a>
-              <a href="#Contact" className="text-gray-600 hover:text-blue-300 font-medium">Contact</a>
-              <a href="#Pages" className="text-gray-600 hover:text-blue-300 font-medium">Pages</a>
-            </nav>
+            <Link to="/" className="text-gray-600 hover:text-blue-300 font-medium">Home</Link>
+            <Link to="/shop" className="text-gray-600 hover:text-blue-300 font-medium flex items-center gap-1">
+              Shop <ChevronDown size={16} />
+            </Link>
+            <Link to="/about" className="text-gray-600 hover:text-blue-300 font-medium">About</Link>
+            <Link to="/blog" className="text-gray-600 hover:text-blue-300 font-medium">Blog</Link>
+            <Link to="/contact" className="text-gray-600 hover:text-blue-300 font-medium">Contact</Link>
+            <Link to="/pages" className="text-gray-600 hover:text-blue-300 font-medium">Pages</Link>
+          </nav>
+
 
             {/* Alışveriş sepeti sağ */}
             <div className="flex items-center gap-4 text-black md:text-[#23A6F0]">
@@ -84,12 +85,11 @@ export default function Header() {
 
           {/*  Mobilde*/}
           <nav className="flex flex-col md:hidden items-center gap-3 mt-6">
-            <a href="#HomePage" className="text-gray-600 hover:text-blue-300 font-medium">Home</a>
-            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Product</a>
-            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Pricing</a>
-            <a href="#" className="text-gray-600 hover:text-blue-300 font-medium">Contact</a>
-          </nav>
-
+          <Link to="/" className="text-gray-600 hover:text-blue-300 font-medium">Home</Link>
+          <Link to="/product" className="text-gray-600 hover:text-blue-300 font-medium">Product</Link>
+          <Link to="/pricing" className="text-gray-600 hover:text-blue-300 font-medium">Pricing</Link>
+          <Link to="/contact" className="text-gray-600 hover:text-blue-300 font-medium">Contact</Link>
+        </nav>
         </div>
       </div>
     </div>
