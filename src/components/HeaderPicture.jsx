@@ -1,5 +1,7 @@
 import React from 'react';
 import HeaderImg from '../assets/newcollection.png'
+import { Link } from 'react-router-dom';
+
 
 export default function HeaderPicture() {
   return (
@@ -29,7 +31,7 @@ export default function HeaderPicture() {
                 </p>
                 
                 <button className="bg-[#23A6F0]   hover:bg-blue-600 text-white font-bold py-4 px-8 rounded text-lg transition-colors">
-                  SHOP NOW
+                <Link to="/shop">SHOP NOW</Link>
                 </button>
               </div>
                <div className="hidden md:block absolute top-0 right-96 w-16 h-16 bg-white rounded-full z-20"></div>

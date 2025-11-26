@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-white">
       <div style={{ backgroundColor: '#FAFAFA' }}>
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between  md:items-center gap-4 md:gap-0">
           <h2 className="text-2xl font-bold" style={{ color: '#252B42' }}>
             Bandage
           </h2>
