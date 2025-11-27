@@ -3,6 +3,35 @@ import { ChevronLeft, ChevronRight, Star, Heart, ShoppingCart, Eye } from 'lucid
 import productdetail1 from '../assets/productdetail1.jpg';
 import productdetail2 from '../assets/productdetail2.jpg';
 import productdetail3 from '../assets/productdetail3.jpg';
+import productdetail4 from '../assets/productdetail4.jpg';
+import productdetail5 from '../assets/productdetail5.jpg';
+import productdetail6 from '../assets/productdetail6.jpg';
+import productdetail7 from '../assets/productdetail7.jpg';
+import productdetail8 from '../assets/productdetail8.jpg';
+import productdetail9 from '../assets/productdetail9.jpg';
+import HooliLogo from '../assets/fa-brands-1.png';
+import LyftLogo from '../assets/fa-brands-2.png';
+import YaprakLogo from '../assets/fa-brands-3.png';
+import StripeLogo from '../assets/fa-brands-4.png';
+import AWSLogo from '../assets/fa-brands-5.png';
+import RedditLogo from '../assets/col-md-2.png';
+
+
+
+const LogoLink = ({ src, alt, href }) => (
+  <a 
+    href={href} 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="transition-opacity hover:opacity-70"
+  >
+    <img 
+      src={src} 
+      alt={alt} 
+      className="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all"
+    />
+  </a>
+);
 
 export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -23,6 +52,17 @@ export default function ProductDetail() {
     { name: 'Navy', code: '#252B42' }
   ];
 
+   const bestsellerProducts = [
+    { id: 1, image: productdetail4, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 2, image: productdetail5, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 3, image: productdetail6, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 4, image: productdetail7, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 5, image: productdetail8, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 6, image: productdetail9, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 7, image: productdetail4, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' },
+    { id: 8, image: productdetail5, title: 'Graphic Design', department: 'English Department', originalPrice: '$16.48', salePrice: '$6.48' }
+  ];
+
   const handlePrevImage = () => {
     setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
@@ -32,6 +72,8 @@ export default function ProductDetail() {
   };
 
   return (
+      <div className="w-full min-h-screen bg-[#F5F5F5]">
+
     <div className="container mx-auto px-4 py-8 md:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Sol taraf - Resimler */}
@@ -272,6 +314,98 @@ export default function ProductDetail() {
           </div>
         )}
       </div>
+
+   <div className="mt-20 mb-16 px-4">
+        <h2 className="text-2xl font-bold text-[#252B42] mb-8" style={{ fontFamily: 'Montserrat' }}>
+          BESTSELLER PRODUCTS
+        </h2>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          {bestsellerProducts.map((product, index) => (
+            <div 
+              key={product.id} 
+              className={`${index >= 4 ? 'hidden md:block' : ''}`}
+            >
+              <div className="bg-white overflow-hidden">
+                <div className="relative h-[550px] md:h-[270px] overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                  <div className="p-6 text-left" style={{ fontFamily: 'Montserrat' }}>
+                <h3 className="text-base font-bold text-[#252B42] mb-2">
+                  {product.title}
+                </h3>
+
+                <p className="text-sm font-bold text-[#737373] mb-3">
+                  {product.department}
+                </p>
+
+                <div className="flex items-center justify-start gap-2">
+                  <span className="text-base font-bold text-[#BDBDBD]">
+                    {product.originalPrice}
+                  </span>
+
+                  <span className="text-base font-bold text-[#23856D]">
+                    {product.salePrice}
+                  </span>
+                </div>
+              </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+           <div className="w-full bg-[#F5F5F5] py-18 mt-5 mb-12">
+                <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-20 md:gap-24">
+                    
+                    <LogoLink 
+                      src={HooliLogo} 
+                      alt="Hooli" 
+                      href="https://hooli.com"
+                    />
+                    
+                    <LogoLink 
+                      src={LyftLogo} 
+                      alt="Lyft" 
+                      href="https://lyft.com"
+                    />
+                    
+                    <LogoLink 
+                      src={YaprakLogo} 
+                      alt="Yaprak" 
+                      href="https://example.com"
+                    />
+                    
+                    <LogoLink 
+                      src={StripeLogo} 
+                      alt="Stripe" 
+                      href="https://stripe.com"
+                    />
+                    
+                    <LogoLink 
+                      src={AWSLogo} 
+                      alt="AWS" 
+                      href="https://aws.amazon.com"
+                    />
+                    
+                    <LogoLink 
+                      src={RedditLogo} 
+                      alt="Reddit" 
+                      href="https://reddit.com"
+                    />
+                    
+                  </div>
+                </div>
+              </div>
+
+    </div>    
     </div>
   );
 }
