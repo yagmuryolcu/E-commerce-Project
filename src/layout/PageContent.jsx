@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import Shop from '../pages/Shop';
 import ProductDetail from '../components/ProductDetail';
+import Contact from '../pages/Contact';
 
 export default function PageContent() {
   return (
@@ -11,6 +12,7 @@ export default function PageContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<Shop/>} />
         <Route path="/product" element={<ProductDetail />} /> 
+        <Route path="/contact" element={<Contact />} />
 
 
       </Routes>
