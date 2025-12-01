@@ -1,6 +1,8 @@
 import React from 'react';
 import { Phone, MapPin, Mail, MoveDown } from 'lucide-react';
 import contactImg from '../assets/contact.png';
+import { Link } from 'react-router-dom';
+
 
 export default function Contact() {
   return (
@@ -176,7 +178,8 @@ export default function Contact() {
               Let's Talk
             </h3>
             <button className="px-10 py-4 bg-[#23A6F0] text-white rounded font-bold hover:bg-[#1a8fd8] transition-colors" style={{ fontFamily: 'Montserrat' }}>
-              Try it free now
+              <Link to="/contact"> Try it free now</Link>
+
             </button>
           </div>
         </div>
