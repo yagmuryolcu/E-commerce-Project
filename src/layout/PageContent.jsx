@@ -6,6 +6,7 @@ import ProductDetail from '../components/ProductDetail';
 import Contact from '../pages/Contact';
 import About from '../pages/About';
 import Pricing from '../pages/Pricing';
+import Team from '../pages/Team';
 
 
 export default function PageContent() {
@@ -18,6 +19,8 @@ export default function PageContent() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/team" element={<Team />} />
+
 
 
 
