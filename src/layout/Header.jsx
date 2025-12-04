@@ -6,6 +6,15 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
     const isShopPage = location.pathname === '/shop';
+    const isTeamPage = location.pathname === '/team';
+    const isPricingPage = location.pathname === '/pricing';
+    const isAboutPage = location.pathname === '/about';
+    const isContactPage = location.pathname === '/contact';
+
+
+
+
+
     
   return (
     <div className="w-full">
@@ -57,31 +66,57 @@ export default function Header() {
                 Shop <ChevronDown size={16} />
               </Link>
               <Link to="/about" className="text-gray-600 hover:text-blue-300 font-medium">About</Link>
-              <Link to="/blog" className="text-gray-600 hover:text-blue-300 font-medium">Blog</Link>
+              <Link to="/team" className="text-gray-600 hover:text-blue-300 font-medium">Blog</Link>
               <Link to="/contact" className="text-gray-600 hover:text-blue-300 font-medium">Contact</Link>
               <Link to="/pages" className="text-gray-600 hover:text-blue-300 font-medium">Pages</Link>
             </nav>
 
             {/* Alışveriş sepeti sağ */}
-            <div className="flex items-center gap-4 text-black md:text-[#23A6F0]">
-              <a href="#" className="hover:text-blue-300 font-medium flex items-center gap-1">
+            <div className="flex items-center gap-4">
+          {(isTeamPage || isContactPage || isPricingPage || isAboutPage) ? (
+                // Team sayfası için özel butonlar
+                <>
+                <Link to="/login" className="text-[#23A6F0] hover:text-blue-400 font-bold text-sm hidden md:block">
+                Login
+              </Link>
+                  <Link to="/register" className="bg-[#23A6F0] text-white font-bold text-sm px-6 py-3 rounded hover:bg-blue-500 hidden md:flex items-center gap-2">
+                Become a member
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+                  {/* Mobil için hamburger menü */}
+                  <button className="md:hidden text-black" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                  </button>
+                </>
+              ) : (
+                // Diğer sayfalar için mevcut yapı
+                <>
+                <div className="hover:text-blue-300 font-medium flex items-center gap-1 text-black md:text-[#23A6F0]">
                 <User size={18} />
-                <span className="hidden md:block">Login / Register</span>
-              </a>
-              <button className="hover:text-blue-300">
-                <Search size={20} />
-              </button>
-              <button className="hover:text-blue-300 flex items-center gap-1">
-                <ShoppingCart size={20} />
-                <span className="text-sm hidden md:block">1</span>
-              </button>
-              <button className="hidden md:flex hover:text-blue-300 items-center gap-1">
-                <Heart size={20} />
-                <span className="text-sm hidden md:block">1</span>
-              </button>
-              <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
+                <span className="hidden md:flex items-center gap-1">
+                  <Link to="/login" className="hover:underline">Login</Link>
+                  <span>/</span>
+                  <Link to="/register" className="hover:underline">Register</Link>
+                </span>
+              </div>
+                  <button className="hover:text-blue-300 text-black md:text-[#23A6F0]">
+                    <Search size={20} />
+                  </button>
+                  <button className="hover:text-blue-300 flex items-center gap-1 text-black md:text-[#23A6F0]">
+                    <ShoppingCart size={20} />
+                    <span className="text-sm hidden md:block">1</span>
+                  </button>
+                  <button className="hidden md:flex hover:text-blue-300 items-center gap-1 text-black md:text-[#23A6F0]">
+                    <Heart size={20} />
+                    <span className="text-sm hidden md:block">1</span>
+                  </button>
+                  <button className="md:hidden text-black" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

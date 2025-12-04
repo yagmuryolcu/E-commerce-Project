@@ -133,7 +133,7 @@ export default function Shop() {
 
         <div className="hidden md:grid md:grid-cols-4 gap-8 px-4 md:px-10 pb-12">
           {products.map((product) => (
-            <div key={product.id} className="bg-white flex flex-col">
+            <Link to="/product" key={product.id} className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
               <div className="relative w-full h-[427px] overflow-hidden">
                 <img 
                   src={product.img} 
@@ -169,13 +169,13 @@ export default function Shop() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
         <div className="grid grid-cols-1 md:hidden gap-8 px-4 pb-12">
           {mobileProducts.map((product) => (
-            <div key={product.id} className="bg-white flex flex-col">
+            <Link to="/ProductDetail" key={product.id} className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
               <div className="relative w-full h-[427px] overflow-hidden">
                 <img 
                   src={product.img} 
@@ -211,7 +211,7 @@ export default function Shop() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
