@@ -7,6 +7,8 @@ import Contact from '../pages/Contact';
 import About from '../pages/About';
 import Pricing from '../pages/Pricing';
 import Team from '../pages/Team';
+import Register from '../pages/Register';
+
 
 
 export default function PageContent() {
@@ -20,6 +22,7 @@ export default function PageContent() {
         <Route path="/about" element={<About />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/register" element={<Register />} />
 
 
 
