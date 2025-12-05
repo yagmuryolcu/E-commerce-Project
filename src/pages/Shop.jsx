@@ -175,7 +175,7 @@ export default function Shop() {
 
         <div className="grid grid-cols-1 md:hidden gap-8 px-4 pb-12">
           {mobileProducts.map((product) => (
-            <Link to="/ProductDetail" key={product.id} className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+            <Link to="/product" key={product.id} className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
               <div className="relative w-full h-[427px] overflow-hidden">
                 <img 
                   src={product.img} 

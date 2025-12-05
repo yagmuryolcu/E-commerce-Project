@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, ShoppingBag } from 'lucide-react';
 
 export default function Register() {
@@ -9,12 +8,14 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    roleId: 1 //tekrar bak
+    roleId: 1
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,6 +58,11 @@ export default function Register() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
+    // Terms kontrolü validateForm içinde
+    if (!termsAccepted) {
+      newErrors.terms = 'You must accept the terms and conditions';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -69,18 +75,14 @@ export default function Register() {
     setIsLoading(true);
     
     try {
-      
       const registerData = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        role: {
-          id: formData.roleId
-        }
+        roleId: formData.roleId 
       };
 
-      // API çağrısı 
-      const response = await fetch('/workintech/ecommerce/management/api/register', {
+      const response = await fetch('http://localhost:9000/workintech/ecommerce/management/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,8 +93,8 @@ export default function Register() {
       if (response.ok) {
         const data = await response.json();
         console.log('Registration successful:', data);
-        alert('Registration successful! Please login.');
-        // Logine yönlendirme eklicem
+        alert("You need to click the link in email to activate your account!");
+        navigate("/login");
       } else {
         const error = await response.json();
         alert(error.message || 'Registration failed. Please try again.');
@@ -116,7 +118,7 @@ export default function Register() {
           <p className="text-[#7F8C8D] font-normal text-m mt-2">Join us and start shopping</p>
         </div>
 
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-[#2C3E50] mb-2">
               Username
@@ -219,42 +221,48 @@ export default function Register() {
             )}
           </div>
 
-          <div className="flex items-start">
-            <input
-              type="checkbox"
-              id="terms"
-              className="w-4 h-4 mt-1 text-[#FF6B35] border-[#BDC3C7] rounded focus:ring-[#FF6B35]"
-            />
-            <label htmlFor="terms" className="ml-2 text-sm text-[#7F8C8D]">
-              I agree to the{' '}
-              <a href="#" className="text-[#FF6B35] hover:text-[#E85A2A] font-medium">
-                Terms and Conditions
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-[#FF6B35] hover:text-[#E85A2A] font-medium">
-                Privacy Policy
-              </a>
-            </label>
+          <div>
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="w-4 h-4 mt-1 text-[#FF6B35] border-[#BDC3C7] rounded focus:ring-[#FF6B35]"
+              />
+              <label htmlFor="terms" className="ml-2 text-sm text-[#7F8C8D]">
+                I agree to the{' '}
+                <a href="#" className="text-[#FF6B35] hover:text-[#E85A2A] font-medium">
+                  Terms and Conditions
+                </a>{' '}
+                and{' '}
+                <a href="#" className="text-[#FF6B35] hover:text-[#E85A2A] font-medium">
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
+            {errors.terms && (
+              <p className="mt-1 text-sm text-[#E74C3C]">{errors.terms}</p>
+            )}
           </div>
 
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={isLoading}
             className="w-full bg-[#FF6B35] text-white py-3 rounded-lg font-medium hover:bg-[#E85A2A] focus:ring-4 focus:ring-[#FFB399] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
-        </div>
+        </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-[#7F8C8D]">
             Already have an account?{' '}
-            
             <Link 
-            to="/login"
-            className="text-[#FF6B35] hover:text-[#E85A2A] font-medium"
+              to="/login"
+              className="text-[#FF6B35] hover:text-[#E85A2A] font-medium"
             >
-            Sign In
+              Sign In
             </Link>
           </p>
         </div>
