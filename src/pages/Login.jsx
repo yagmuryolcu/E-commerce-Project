@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // ← EKLE
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../store/actions/authActions'; // ← authActions'dan import et
 import { Mail, Lock, Eye, EyeOff, ShoppingBag } from 'lucide-react';
 
 export default function Login() {
-  const navigate = useNavigate();  // ← EKLE
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector(state => state.auth); // ← auth reducer'dan al
   
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,8 +36,6 @@ export default function Login() {
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
     
     setErrors(newErrors);
@@ -45,41 +47,17 @@ export default function Login() {
     
     if (!validateForm()) return;
     
-    setIsLoading(true);
+    // ✅ authActions'daki loginUser kullan
+    const result = await dispatch(loginUser(
+      formData.email,
+      formData.password,
+      rememberMe
+    ));
     
-    try {
-      const loginData = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      const response = await fetch('http://localhost:9000/workintech/ecommerce/management/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful:', data);
-        
-        // ← Kullanıcı bilgilerini localStorage'a kaydet (opsiyonel)
-        localStorage.setItem('user', JSON.stringify(data));
-        
-        // ← HOME SAYFASINA YÖNLENDİR
-        navigate('/');
-        
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Login failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (result.success) {
+      navigate('/');
+    } else {
+      alert(result.error || 'Login failed. Please try again.');
     }
   };
 
@@ -94,7 +72,13 @@ export default function Login() {
           <p className="text-[#7F8C8D] font-normal text-m mt-2">Sign in to your account</p>
         </div>
 
-        <div className="space-y-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#2C3E50] mb-2">
               Email Address
@@ -107,6 +91,7 @@ export default function Login() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="user@hotmail.com"
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent outline-none transition ${
                   errors.email ? 'border-[#E74C3C]' : 'border-[#BDC3C7]'
                 }`}
@@ -129,6 +114,7 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="Enter your password"
                 className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent outline-none transition ${
                   errors.password ? 'border-[#E74C3C]' : 'border-[#BDC3C7]'
                 }`}
@@ -147,10 +133,12 @@ export default function Login() {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
+            <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                className="w-4 h-4 text-[#FF6B35] border-[#BDC3C7] rounded focus:ring-[#FF6B35]"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-[#FF6B35] border-[#BDC3C7] rounded focus:ring-[#FF6B35] cursor-pointer"
               />
               <span className="ml-2 text-sm text-[#7F8C8D]">Remember me</span>
             </label>
@@ -160,13 +148,13 @@ export default function Login() {
           </div>
 
           <button
-            onClick={handleSubmit}
-            disabled={isLoading}
+            type="submit"
+            disabled={loading}
             className="w-full bg-[#FF6B35] text-white py-3 rounded-lg font-medium hover:bg-[#E85A2A] focus:ring-4 focus:ring-[#FFB399] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
-        </div>
+        </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-[#7F8C8D]">

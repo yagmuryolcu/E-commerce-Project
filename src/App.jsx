@@ -10,10 +10,20 @@ import ServiceSection from './components/ServiceSection'
 import FeaturedPost from './components/FeaturedPost'
 import Footer from './layout/Footer'
 import { BrowserRouter } from 'react-router-dom'
+import { useDispatch } from 'react-redux';
+import { loadUserFromStorage } from './store/actions/authActions';
 import PageContent from './layout/PageContent'
+import { useEffect } from 'react'
 
 function App() {
   const [count, setCount] = useState(0)
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    //  localStorage'dan user yükle
+    dispatch(loadUserFromStorage());
+  }, [dispatch]);
+
 
   return (
     <BrowserRouter>

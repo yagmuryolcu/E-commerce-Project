@@ -2,12 +2,12 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { thunk } from 'redux-thunk';
 import logger from 'redux-logger';
 
-import clientReducer from './reducers/clientReducer';
+import authReducer from './reducers/authReducer'; 
 import productReducer from './reducers/productReducer';
 import shoppingCartReducer from './reducers/shoppingCartReducer';
 
 const rootReducer = combineReducers({
-  client: clientReducer,
+  auth: authReducer, 
   product: productReducer,
   shoppingCart: shoppingCartReducer,
 });
