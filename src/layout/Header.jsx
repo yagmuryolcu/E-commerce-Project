@@ -1,6 +1,8 @@
 import React, { useState } from 'react'; 
 import { Link, useLocation } from 'react-router-dom';
-import { Phone, Mail, Instagram, Youtube, Facebook, Twitter, Search, ShoppingCart, Heart, ChevronDown, User, Menu, X } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Phone, Mail, Instagram, Youtube, Facebook, Twitter, Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
+import CategoriesDropdown from '../components/CategoriesDropdown';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,9 +13,13 @@ export default function Header() {
     const isAboutPage = location.pathname === '/about';
     const isContactPage = location.pathname === '/contact';
 
-
-
-
+    // Redux'tan sepet verilerini al
+    const cartItems = useSelector(state => state.shoppingCart.cart);
+    const cartCount = cartItems.reduce((total, item) => total + item.count, 0);
+    
+    // Redux'tan wishlist verilerini al
+    const wishlistItems = useSelector(state => state.wishlist?.items || []);
+    const wishlistCount = wishlistItems.length;
 
     
   return (
@@ -54,27 +60,24 @@ export default function Header() {
       <div className="bg-white ">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            {/* Bandage yazı*/}
-            <div className="text-2xl font-bold text-slate-800">
+            <Link to="/" className="text-2xl font-bold text-slate-800">
               Bandage
-            </div>
+            </Link>
 
-            {/* Navbar (desktop) */}
             <nav className="hidden md:flex items-center gap-6 ml-0">
               <Link to="/" className="text-gray-600 hover:text-blue-300 font-medium">Home</Link>
-              <Link to="/shop" className="text-gray-600 hover:text-blue-300 font-medium flex items-center gap-1">
-                Shop <ChevronDown size={16} />
-              </Link>
+              
+              <CategoriesDropdown />
+              
               <Link to="/about" className="text-gray-600 hover:text-blue-300 font-medium">About</Link>
-              <Link to="/team" className="text-gray-600 hover:text-blue-300 font-medium">Blog</Link>
+              <Link to="/blog" className="text-gray-600 hover:text-blue-300 font-medium">Blog</Link>
               <Link to="/contact" className="text-gray-600 hover:text-blue-300 font-medium">Contact</Link>
-              <Link to="/pages" className="text-gray-600 hover:text-blue-300 font-medium">Pages</Link>
+              <Link to="/team" className="text-gray-600 hover:text-blue-300 font-medium">Pages</Link>
             </nav>
 
             {/* Alışveriş sepeti sağ */}
             <div className="flex items-center gap-4">
           {(isTeamPage || isContactPage || isPricingPage || isAboutPage) ? (
-                // Team sayfası için özel butonlar
                 <>
                 <Link to="/login" className="text-[#23A6F0] hover:text-blue-400 font-bold text-sm hidden md:block">
                 Login
@@ -94,24 +97,41 @@ export default function Header() {
                 // Diğer sayfalar için mevcut yapı
                 <>
                 <div className="hover:text-blue-300 font-medium flex items-center gap-1 text-black md:text-[#23A6F0]">
-                <User size={18} />
-                <span className="hidden md:flex items-center gap-1">
-                  <Link to="/login" className="hover:underline">Login</Link>
-                  <span>/</span>
-                  <Link to="/register" className="hover:underline">Register</Link>
-                </span>
+                <Link to="/login" className="flex items-center gap-1">
+                  <User size={18} />
+                  <span className="hidden md:flex items-center gap-1">
+                    <span className="hover:underline">Login</span>
+                    <span>/</span>
+                    <span className="hover:underline">Register</span>
+                  </span>
+                </Link>
               </div>
                   <button className="hover:text-blue-300 text-black md:text-[#23A6F0]">
                     <Search size={20} />
                   </button>
-                  <button className="hover:text-blue-300 flex items-center gap-1 text-black md:text-[#23A6F0]">
+                  <Link to="/shopping-cart" className="hover:text-blue-300 flex items-center gap-1 text-black md:text-[#23A6F0] relative">
                     <ShoppingCart size={20} />
-                    <span className="text-sm hidden md:block">1</span>
-                  </button>
-                  <button className="hidden md:flex hover:text-blue-300 items-center gap-1 text-black md:text-[#23A6F0]">
+                    {cartCount > 0 && (
+                      <span className="text-sm hidden md:block">{cartCount}</span>
+                    )}
+                    {/* Mobile için badge */}
+                    {cartCount > 0 && (
+                      <span className="md:hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link to="/wishlist" className="hidden md:flex hover:text-blue-300 items-center gap-1 text-black md:text-[#23A6F0] relative">
                     <Heart size={20} />
-                    <span className="text-sm hidden md:block">1</span>
-                  </button>
+                    {wishlistCount > 0 && (
+                      <>
+                        <span className="text-sm hidden md:block">{wishlistCount}</span>
+                        <span className="md:hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {wishlistCount}
+                        </span>
+                      </>
+                    )}
+                  </Link>
                   <button className="md:hidden text-black" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                     {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                   </button>
@@ -147,21 +167,23 @@ export default function Header() {
                   
                   {/* Mavi İkonlar */}
                   <div className="flex flex-col items-center gap-6 mt-6">
-                    <a href="#" className="text-[#23A6F0] hover:text-blue-300 font-medium flex items-center gap-2 text-xl">
+                    <Link to="/login" className="text-[#23A6F0] hover:text-blue-300 font-medium flex items-center gap-2 text-xl" onClick={() => setMobileMenuOpen(false)}>
                       <User size={20} />
                       <span>Login / Register</span>
-                    </a>
+                    </Link>
                     <button className="text-[#23A6F0] hover:text-blue-300">
                       <Search size={28} />
                     </button>
-                    <button className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-2">
+                    <Link to="/shopping-cart" className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-2 relative" onClick={() => setMobileMenuOpen(false)}>
                       <ShoppingCart size={28} />
-                      <span className="text-lg">1</span>
-                    </button>
-                    <button className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-2">
+                      <span className="text-lg">{cartCount}</span>
+                    </Link>
+                    <Link to="/wishlist" className="text-[#23A6F0] hover:text-blue-300 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                       <Heart size={28} />
-                      <span className="text-lg">1</span>
-                    </button>
+                      {wishlistCount > 0 && (
+                        <span className="text-lg">{wishlistCount}</span>
+                      )}
+                    </Link>
                   </div>
                 </nav>
               ) : (

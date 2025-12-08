@@ -10,6 +10,13 @@ import Team from '../pages/Team';
 import Register from '../pages/Register';
 import Login from '../pages/Login';
 import ProductPage from '../components/ProductPage';
+import CartToast from '../components/CarToast';
+import ShoppingCart from '../pages/ShoppingCart';
+import Wishlist from '../components/Wishlist';
+import CategoriesSection from '../components/CategoriesSection';
+import BlogSection from '../components/BlogSection';
+import AddressCardManager from '../components/AddressCardManager';
+import OrderSuccessfull from '../components/OrderSuccesfull';
 
 
 
@@ -27,6 +34,17 @@ export default function PageContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/product" element={<ProductPage />} />
+        <Route path="/shopping-cart" element={<ShoppingCart />} />
+         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/categories" element={<CategoriesSection />} />
+         <Route path="/blog" element={<BlogSection />} />
+         <Route path="/user/address" element={<AddressCardManager />} />
+          <Route path="/order-success" element={<OrderSuccessfull />} />
+
+
+
+
+
 
 
 

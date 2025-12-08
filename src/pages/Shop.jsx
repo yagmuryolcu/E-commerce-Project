@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, fetchCategories } from '../store/actions/productActions';
+import { addToWishlist, removeFromWishlist } from '../store/actions/wishlistAction';
 
 import shop1 from '../assets/shop1.jpg';
 import shop2 from '../assets/shop2.jpg';
@@ -9,6 +10,7 @@ import shop3 from '../assets/shop3.jpg';
 import shop4 from '../assets/shop4.jpg';
 import shop5 from '../assets/shop5.jpg';
 import BrandLogo from '../components/BrandLogo'; 
+import WishlistToast from '../components/WishlistToast'; 
 
 import shopfilter1 from '../assets/shop-filter1.jpg';
 import shopfilter2 from '../assets/shop-filter2.jpg';
@@ -23,50 +25,64 @@ import shopfilter10 from '../assets/shop-filter10.jpg';
 import shopfilter11 from '../assets/shop-filter11.jpg';
 import shopfilter12 from '../assets/shop-filter12.jpg';
 
-import { Grid, List, ChevronDown } from 'lucide-react';
+import { Grid, List, ChevronDown, Heart } from 'lucide-react';
 
-const fallbackImages = {
-  1: shopfilter1,
-  2: shopfilter2,
-  3: shopfilter3,
-  4: shopfilter4,
-  5: shopfilter5,
-  6: shopfilter6,
-  7: shopfilter7,
-  8: shopfilter8,
-  9: shopfilter9,
-  10: shopfilter10,
-  11: shopfilter11,
-  12: shopfilter12,
+// Backend URL'lerini import edilmiş resimlerle eşleştir
+const imageMapper = {
+  '/assets/shop-filter1.jpg': shopfilter1,
+  '/assets/shop-filter2.jpg': shopfilter2,
+  '/assets/shop-filter3.jpg': shopfilter3,
+  '/assets/shop-filter4.jpg': shopfilter4,
+  '/assets/shop-filter5.jpg': shopfilter5,
+  '/assets/shop-filter6.jpg': shopfilter6,
+  '/assets/shop-filter7.jpg': shopfilter7,
+  '/assets/shop-filter8.jpg': shopfilter8,
+  '/assets/shop-filter9.jpg': shopfilter9,
+  '/assets/shop-filter10.jpg': shopfilter10,
+  '/assets/shop-filter11.jpg': shopfilter11,
+  '/assets/shop-filter12.jpg': shopfilter12,
 };
+
+// Fallback için array
+const fallbackImagesArray = [
+  shopfilter1, shopfilter2, shopfilter3, shopfilter4,
+  shopfilter5, shopfilter6, shopfilter7, shopfilter8,
+  shopfilter9, shopfilter10, shopfilter11, shopfilter12,
+];
 
 export default function Shop() {
   const dispatch = useDispatch();
   
   const { productList, total, fetchState, limit, offset } = useSelector(state => state.product);
+  const wishlistItems = useSelector(state => state.wishlist.items);
   
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('popularity');
   const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistToast, setWishlistToast] = useState(null);
+  
+  // Ürün listesinin başlangıcı için ref
+  const productSectionRef = useRef(null);
   
   // Backend'den 20 ürün geliyor ama sadece ilk 12'sini kullan
   const limitedProducts = productList.slice(0, 12);
   
   console.log('========== REDUX STATE ==========');
-  console.log('Backend Products:', productList.length); // 20
-  console.log('Limited Products:', limitedProducts.length); // 12
+  console.log('Backend Products:', productList.length);
+  console.log('Limited Products:', limitedProducts.length);
   console.log('Total:', total);
   console.log('Fetch State:', fetchState);
   console.log('Current Page:', currentPage);
+  console.log('Sort By:', sortBy);
   console.log('================================');
   
-  //4 ürün/sayfa 
+  // 4 ürün/sayfa mobile
   const itemsPerPageMobile = 4;
-  const totalPagesMobile = Math.ceil(limitedProducts.length / itemsPerPageMobile); // 3 sayfa
+  const totalPagesMobile = Math.ceil(limitedProducts.length / itemsPerPageMobile);
   
-  //  12 ürün/sayfa 
+  // 12 ürün/sayfa desktop
   const itemsPerPageDesktop = 12;
-  const totalPagesDesktop = Math.ceil(limitedProducts.length / itemsPerPageDesktop); // 1 sayfa
+  const totalPagesDesktop = Math.ceil(limitedProducts.length / itemsPerPageDesktop);
   
   useEffect(() => {
     console.log('🟢 Component mounted - fetching data...');
@@ -77,6 +93,8 @@ export default function Shop() {
   useEffect(() => {
     console.log('🔵 Sort changed:', sortBy);
     dispatch(fetchProducts(null, '', sortBy, limit, offset));
+    // Sort değiştiğinde sayfanın en başına scroll
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [sortBy, dispatch, limit, offset]);
 
   const startIndexMobile = (currentPage - 1) * itemsPerPageMobile;
@@ -87,10 +105,52 @@ export default function Shop() {
   const endIndexDesktop = startIndexDesktop + itemsPerPageDesktop;
   const desktopProducts = limitedProducts.slice(startIndexDesktop, endIndexDesktop);
 
-  // sayfa değiştiğinde scroll to top
- /* useEffect(() => {
+  // Sayfa değiştiğinde scroll to top
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);*/
+    // Mobile için ekstra kontrol
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [currentPage]);
+
+  // Resim URL'ini al - backend URL varsa map et, yoksa index bazlı fallback
+  const getProductImage = (product, index) => {
+    const backendUrl = product.images?.[0]?.url;
+    if (backendUrl && imageMapper[backendUrl]) {
+      return imageMapper[backendUrl];
+    }
+    return fallbackImagesArray[index % 12];
+  };
+
+  // Ürün wishlist'te mi kontrol et
+  const isInWishlist = (productId) => {
+    return wishlistItems.some(item => item.product.id === productId);
+  };
+
+  // Wishlist toggle fonksiyonu
+  const handleWishlistToggle = (product, index = 0) => {
+    const isCurrentlyInWishlist = isInWishlist(product.id);
+    
+    if (isCurrentlyInWishlist) {
+      dispatch(removeFromWishlist(product.id));
+      setWishlistToast({
+        product: {
+          ...product,
+          image: getProductImage(product, index)
+        },
+        isAdded: false
+      });
+    } else {
+      dispatch(addToWishlist(product));
+      setWishlistToast({
+        product: {
+          ...product,
+          image: getProductImage(product, index)
+        },
+        isAdded: true
+      });
+    }
+  };
 
   if (fetchState === 'FETCHING') {
     return (
@@ -110,6 +170,15 @@ export default function Shop() {
 
   return (
     <div className="flex flex-col gap-4 w-full bg-white">
+      {/* Wishlist Toast */}
+      {wishlistToast && (
+        <WishlistToast
+          product={wishlistToast.product}
+          isAdded={wishlistToast.isAdded}
+          onClose={() => setWishlistToast(null)}
+        />
+      )}
+      
       <div className="px-8 bg-[#FAFAFA]">
         <h1 className="mt-8 text-2xl font-bold text-center mb-8" style={{ fontFamily: 'Montserrat' }}>
           Shop
@@ -191,99 +260,128 @@ export default function Shop() {
         </div>
 
         {/* Desktop - 12 ürün tek sayfada */}
-        <div className="hidden md:grid md:grid-cols-4 gap-8 px-4 md:px-10 pb-12">
-          {desktopProducts.map((product) => (
-            <Link 
-              to={`/productdetail/${product.id}`}
-              key={product.id} 
-              className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
-            >
-              <div className="relative w-full h-[427px] overflow-hidden">
-                <img 
-                  src={fallbackImages[product.id] || product.images?.[0]?.url || shopfilter1}
-                  alt={product.title} 
-                  className="w-full h-full object-cover"
+        <div ref={productSectionRef} className="hidden md:grid md:grid-cols-4 gap-8 px-4 md:px-10 pb-12">
+          {desktopProducts.map((product, index) => (
+            <div key={product.id} className="bg-white flex flex-col relative group">
+              {/* Wishlist Button */}
+              <button
+                onClick={() => handleWishlistToggle(product, index)}
+                className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-md hover:scale-110 transition-transform"
+              >
+                <Heart 
+                  size={20} 
+                  className={isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}
                 />
-              </div>
+              </button>
 
-              <div className="flex flex-col items-center gap-2 py-6 px-6">
-                <h5 className="text-[#252B42] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
-                  {product.title}
-                </h5>
-                <p className="text-[#737373] font-bold text-sm" style={{ fontFamily: 'Montserrat' }}>
-                  {product.department}
-                </p>
-                
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[#BDBDBD] font-bold text-base line-through" style={{ fontFamily: 'Montserrat' }}>
-                    ${product.price}
-                  </span>
-                  <span className="text-[#23856D] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
-                    ${product.discountPrice}
-                  </span>
+              <Link 
+                to={`/productdetail/${product.id}`}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <div className="relative w-full h-[427px] overflow-hidden">
+                  <img 
+                    src={getProductImage(product, index)}
+                    alt={product.title} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
-                <div className="flex gap-2 mt-2">
-                  {product.colors?.map((color, idx) => (
-                    <div 
-                      key={idx}
-                      className="w-4 h-4 rounded-full cursor-pointer"
-                      style={{ backgroundColor: color.colorCode }}
-                    ></div>
-                  ))}
+                <div className="flex flex-col items-center gap-2 py-6 px-6">
+                  <h5 className="text-[#252B42] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
+                    {product.title}
+                  </h5>
+                  <p className="text-[#737373] font-bold text-sm" style={{ fontFamily: 'Montserrat' }}>
+                    {product.department}
+                  </p>
+                  
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[#BDBDBD] font-bold text-base line-through" style={{ fontFamily: 'Montserrat' }}>
+                      ${product.price}
+                    </span>
+                    <span className="text-[#23856D] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
+                      ${product.discountPrice}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2 mt-2">
+                    {product.colors?.map((color, idx) => (
+                      <div 
+                        key={idx}
+                        className="w-4 h-4 rounded-full cursor-pointer"
+                        style={{ backgroundColor: color.colorCode }}
+                      ></div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
 
+        {/* Mobile - 4 ürün/sayfa */}
         <div className="grid grid-cols-1 md:hidden gap-8 px-4 pb-12">
-          {mobileProducts.map((product) => (
-            <Link 
-              to={`/productdetail/${product.id}`}
-              key={product.id} 
-              className="bg-white flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
-            >
-              <div className="relative w-full h-[427px] overflow-hidden">
-                <img 
-                  src={fallbackImages[product.id] || product.images?.[0]?.url || shopfilter1}
-                  alt={product.title} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          {mobileProducts.map((product, index) => {
+            // Mobile için global index hesapla
+            const globalIndex = startIndexMobile + index;
+            return (
+              <div key={product.id} className="bg-white flex flex-col relative group">
+                {/* Wishlist Button */}
+                <button
+                  onClick={() => handleWishlistToggle(product, globalIndex)}
+                  className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-md hover:scale-110 transition-transform"
+                >
+                  <Heart 
+                    size={20} 
+                    className={isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+                  />
+                </button>
 
-              <div className="flex flex-col items-center gap-2 py-6 px-6">
-                <h5 className="text-[#252B42] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
-                  {product.title}
-                </h5>
-                <p className="text-[#737373] font-bold text-sm" style={{ fontFamily: 'Montserrat' }}>
-                  {product.department}
-                </p>
-                
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[#BDBDBD] font-bold text-base line-through" style={{ fontFamily: 'Montserrat' }}>
-                    ${product.price}
-                  </span>
-                  <span className="text-[#23856D] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
-                    ${product.discountPrice}
-                  </span>
-                </div>
+                <Link 
+                  to={`/productdetail/${product.id}`}
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative w-full h-[427px] overflow-hidden">
+                    <img 
+                      src={getProductImage(product, globalIndex)}
+                      alt={product.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                <div className="flex gap-2 mt-2">
-                  {product.colors?.map((color, idx) => (
-                    <div 
-                      key={idx}
-                      className="w-4 h-4 rounded-full cursor-pointer"
-                      style={{ backgroundColor: color.colorCode }}
-                    ></div>
-                  ))}
-                </div>
+                  <div className="flex flex-col items-center gap-2 py-6 px-6">
+                    <h5 className="text-[#252B42] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
+                      {product.title}
+                    </h5>
+                    <p className="text-[#737373] font-bold text-sm" style={{ fontFamily: 'Montserrat' }}>
+                      {product.department}
+                    </p>
+                    
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[#BDBDBD] font-bold text-base line-through" style={{ fontFamily: 'Montserrat' }}>
+                        ${product.price}
+                      </span>
+                      <span className="text-[#23856D] font-bold text-base" style={{ fontFamily: 'Montserrat' }}>
+                        ${product.discountPrice}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      {product.colors?.map((color, idx) => (
+                        <div 
+                          key={idx}
+                          className="w-4 h-4 rounded-full cursor-pointer"
+                          style={{ backgroundColor: color.colorCode }}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Pagination - sadece mobilde) */}
+        {/* Pagination - sadece mobilde */}
         <div className="flex md:hidden justify-center items-center gap-2 pb-12">
           <button 
             onClick={() => setCurrentPage(1)}
