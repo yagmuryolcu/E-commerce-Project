@@ -17,6 +17,7 @@ import CategoriesSection from '../components/CategoriesSection';
 import BlogSection from '../components/BlogSection';
 import AddressCardManager from '../components/AddressCardManager';
 import OrderSuccessfull from '../components/OrderSuccesfull';
+import MyOrders from '../components/MyOrders';
 
 
 
@@ -40,6 +41,9 @@ export default function PageContent() {
          <Route path="/blog" element={<BlogSection />} />
          <Route path="/user/address" element={<AddressCardManager />} />
           <Route path="/order-success" element={<OrderSuccessfull />} />
+           <Route path="/all-orders" element={<MyOrders />} />
+
+
 
 
 

@@ -70,13 +70,21 @@ export default function Wishlist() {
 
   const wishlistItems = useSelector(state => state.wishlist.items);
 
-  const getProductImage = (product, index) => {
-    const backendUrl = product.images?.[0]?.url;
-    if (backendUrl && imageMapper[backendUrl]) {
-      return imageMapper[backendUrl];
-    }
-    return fallbackImagesArray[index % 12];
-  };
+ const getProductImage = (product, index) => {
+  if (product.image) {
+    return product.image;
+  }
+  
+  if (product.selectedImage) {
+    return product.selectedImage;
+  }
+  
+  const backendUrl = product.images?.[0]?.url;
+  if (backendUrl && imageMapper[backendUrl]) {
+    return imageMapper[backendUrl];
+  }
+    return fallbackImagesArray[index % fallbackImagesArray.length];
+};
 
   const handleRemoveFromWishlist = (productId) => {
     dispatch(removeFromWishlist(productId));

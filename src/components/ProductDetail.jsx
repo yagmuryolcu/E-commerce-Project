@@ -210,37 +210,39 @@ export default function ProductDetail() {
     setShowToast(true);
   };
 
-  const handleToggleWishlist = () => {
-    if (!product) return;
-    
-    const productForToast = {
-      ...product,
-      title: product.name || product.title || 'Product',
-      department: product.category_id || 'Product Category',
-      image: images[0]
-    };
-    
-    console.log(' Toggle Wishlist:', { 
-      productId: product.id, 
-      isInWishlist, 
-      action: isInWishlist ? 'REMOVE' : 'ADD' 
-    });
-    
-    if (isInWishlist) {
-      dispatch(removeFromWishlist(product.id));
-      setWishlistToastProduct({ ...productForToast, isAdded: false });
-    } else {
-      const productToSave = {
-        ...product,
-        title: product.name || product.title || 'Product',
-        department: product.category_id || 'Product Category',
-      };
-      dispatch(addToWishlist(productToSave));
-      setWishlistToastProduct({ ...productForToast, isAdded: true });
-    }
-    
-    setShowWishlistToast(true);
+const handleToggleWishlist = () => {
+  if (!product) return;
+  
+  const productToSave = {
+    ...product,
+    title: product.name || product.title || 'Product',
+    department: product.category_id || 'Product Category',
+    image: images[selectedImage], // Şu anki seçili resim
+    selectedImage: images[selectedImage] 
   };
+  
+  const productForToast = {
+    ...productToSave,
+    isAdded: !isInWishlist
+  };
+  
+  console.log('🎯 Toggle Wishlist:', { 
+    productId: product.id, 
+    isInWishlist, 
+    action: isInWishlist ? 'REMOVE' : 'ADD',
+    selectedImageIndex: selectedImage,
+    imageUrl: images[selectedImage]
+  });
+  
+  if (isInWishlist) {
+    dispatch(removeFromWishlist(product.id));
+  } else {
+    dispatch(addToWishlist(productToSave)); // image ve selectedImage ile kaydet
+  }
+  
+  setWishlistToastProduct(productForToast);
+  setShowWishlistToast(true);
+};
 
   const colors = [
     { name: 'Blue', code: '#23A6F0' },

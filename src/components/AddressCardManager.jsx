@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, MapPin, Plus, Edit2, Trash2, Check, Loader } from 'lucide-react';
-import { Link } from "react-router-dom";
+import { Link , useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux'; 
+
 
 
 
 export default function AddressCardManager() {
+    
+const navigate= useNavigate();
   const [activeTab, setActiveTab] = useState('address');
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
@@ -14,6 +18,9 @@ export default function AddressCardManager() {
 
   const [addresses, setAddresses] = useState([]);
   const [cards, setCards] = useState([]);
+  const cart = useSelector(state => state.shoppingCart?.cart || []);
+  const [cartTotal, setCartTotal] = useState(0);
+  const SHIPPING_FEE = 29.99;
 
   const [addressForm, setAddressForm] = useState({
     title: '',
@@ -42,6 +49,21 @@ export default function AddressCardManager() {
       ...(token && { 'Authorization': token })
     };
   };
+
+useEffect(() => {
+    if (cart && cart.length > 0) {
+      const subtotal = cart.reduce((sum, item) => {
+        const price = item.product?.discount_price || item.product?.price || 0;
+        return sum + (price * item.count);
+      }, 0);
+      const finalTotal = subtotal + SHIPPING_FEE;
+      setCartTotal(finalTotal);
+    } else {
+      setCartTotal(0);
+    }
+  }, [cart]);
+
+
 
   useEffect(() => {
     let isMounted = true;
@@ -97,6 +119,20 @@ export default function AddressCardManager() {
     }
     
     try {
+
+
+      const cleanedPhone = addressForm.phone.replace(/\D/g, '');
+
+if (cleanedPhone.length < 10 || cleanedPhone.length > 11) {
+  alert('Phone number must be 10 or 11 digits (e.g., 5551234567)');
+  return;
+}
+
+const addressData = {
+  ...addressForm,
+  phone: cleanedPhone 
+};
+
       console.log('Gönderilen adres:', addressForm);
       
       const response = await fetch(
@@ -253,6 +289,144 @@ if (!window.confirm('Are you sure you want to delete this card?')) return;
     );
   }
 
+const handleOrderSubmit = async () => {
+  if (!selectedAddress || !selectedCard) {
+    alert('Please select address and payment card');
+    return;
+  }
+
+  try {
+    const selectedCardData = cards.find(c => c.id === selectedCard);
+    const selectedAddressData = addresses.find(a => a.id === selectedAddress);
+
+    let cardNumber =
+      selectedCardData.cardNo ||
+      selectedCardData.card_no ||
+      '';
+
+    cardNumber = cardNumber.replace(/\D/g, '');
+
+    if (cardNumber.length < 16) {
+      const lastFour = cardNumber.slice(-4);
+      cardNumber = '1234123412' + lastFour.padStart(6, '3');
+    }
+
+    cardNumber = cardNumber.padEnd(16, '0').slice(0, 16);
+
+    console.log('💳 Card Number (16 digits):', cardNumber);
+
+    const orderPayload = {
+      addressId: selectedAddress,
+      orderDate: new Date().toISOString(),
+      cardNo: cardNumber,
+      cardName: (
+        selectedCardData.nameOnCard ||
+        selectedCardData.name_on_card ||
+        ''
+      ).toString(),
+      cardExpireMonth: parseInt(
+        selectedCardData.expireMonth ||
+        selectedCardData.expire_month ||
+        12
+      ),
+      cardExpireYear: parseInt(
+        selectedCardData.expireYear ||
+        selectedCardData.expire_year ||
+        2025
+      ),
+      cardCcv: 123,
+      price: parseFloat(cartTotal.toFixed(2)),
+      products: cart.map(item => ({
+        productId: item.product.id,
+        count: item.count,
+        detail: item.product.title || 'Product',
+        price: parseFloat(
+          (
+            item.product.discount_price ||
+            item.product.price ||
+            0
+          ).toFixed(2)
+        )
+      }))
+    };
+
+    console.log(
+      '📤 Sending order to backend:',
+      JSON.stringify(orderPayload, null, 2)
+    );
+
+    const response = await fetch(
+      'http://localhost:9000/workintech/ecommerce/management/api/order',
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(orderPayload)
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error Details:', errorData);
+      throw new Error(
+        JSON.stringify(errorData) || 'Order creation failed'
+      );
+    }
+
+    const createdOrder = await response.json();
+
+    const orderId =
+      createdOrder.id ||
+      createdOrder.data?.id ||
+      createdOrder;
+
+
+    const orderSuccessData = {
+      orderId,
+      total: cartTotal,
+      addressTitle: selectedAddressData.title,
+      addressFull: `${selectedAddressData.address}, ${selectedAddressData.district}, ${selectedAddressData.city}`,
+      addressName: `${selectedAddressData.name} ${selectedAddressData.surname}`,
+      addressPhone: selectedAddressData.phone,
+      cardNo:
+        '**** **** **** ' +
+        (
+          selectedCardData.card_no ||
+          selectedCardData.cardNo
+        )
+          .toString()
+          .slice(-4),
+      cardName:
+        selectedCardData.name_on_card ||
+        selectedCardData.nameOnCard,
+      items: cart.map(item => ({
+        name: item.product.title,
+        count: item.count,
+        price:
+          item.product.discount_price ||
+          item.product.price
+      }))
+    };
+
+    console.log('🎉 Order Success Data:', orderSuccessData);
+
+    navigate('/order-success', {
+      state: { orderData: orderSuccessData },
+      replace: true
+    });
+
+    return {
+      success: true,
+      orderData: orderSuccessData
+    };
+
+  } catch (error) {
+    console.error('❌ Order creation error:', error);
+    alert(`Order creation failed:\n${error.message}`);
+    return { success: false };
+  }
+};
+
+  
   return (
     <div className="w-full min-h-screen bg-gray-50" style={{ fontFamily: 'Montserrat' }}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -502,7 +676,7 @@ if (!window.confirm('Are you sure you want to delete this card?')) return;
                       type="text"
                       value={cardForm.nameOnCard}
                       onChange={(e) => setCardForm({...cardForm, nameOnCard: e.target.value.toUpperCase()})}
-                      placeholder="JOHN DOE"
+                      placeholder="NAME SURNAME"
                       className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -635,22 +809,25 @@ if (!window.confirm('Are you sure you want to delete this card?')) return;
             ))}
           </div>
         )}
-
-        <div className="mt-8 flex justify-end">
-         <Link to={selectedAddress && selectedCard ? "/order-success" : "#"}>
-  <button
-    disabled={!selectedAddress || !selectedCard}
-    className={`px-8 py-4 rounded-md font-semibold text-lg transition-all ${
-      selectedAddress && selectedCard
-        ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg'
-        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-    }`}
-  >
-   Save & Continue
-  </button>
-</Link>
-
-        </div>
+       <div className="mt-8 flex justify-end">
+           {selectedAddress && selectedCard ? (
+    <button
+      onClick={async () => {
+        await handleOrderSubmit(); 
+      }}
+      className="px-8 py-4 rounded-md font-semibold text-lg transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-lg"
+    >
+      Complete Order
+    </button>
+  ) : (
+    <button
+      disabled
+      className="px-8 py-4 rounded-md font-semibold text-lg transition-all bg-gray-300 text-gray-500 cursor-not-allowed"
+    >
+      Complete Order
+    </button>
+  )}
+</div>
       </div>
     </div>
   );

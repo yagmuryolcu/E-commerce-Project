@@ -21,25 +21,29 @@ export const setAddress = (address) => ({
 
 const API_BASE_URL = 'http://localhost:9000/workintech/ecommerce/management/api';
 
-
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
-    'Authorization': token   ,
+    'Authorization': token,
   };
 };
 
-
+// Aynı ürünün farklı renklerini ayrı item olarak tut
 export const addToCart = (product) => {
   return (dispatch, getState) => {
     const { shoppingCart } = getState();
-    const existingItem = shoppingCart.cart.find(item => item.product.id === product.id);
+    
+    const existingItem = shoppingCart.cart.find(item => 
+      item.product.id === product.id && 
+      item.product.color?.code === product.color?.code
+    );
 
     let newCart;
     if (existingItem) {
       newCart = shoppingCart.cart.map(item =>
-        item.product.id === product.id
+        item.product.id === product.id && 
+        item.product.color?.code === product.color?.code
           ? { ...item, count: item.count + 1 }
           : item
       );
@@ -48,38 +52,39 @@ export const addToCart = (product) => {
     }
 
     dispatch(setCart(newCart));
-    
     localStorage.setItem('cart', JSON.stringify(newCart));
     
-    console.log(' Product added to cart:', product.title);
   };
 };
 
-
-export const removeFromCart = (productId) => {
+export const removeFromCart = (productId, colorCode) => {
   return (dispatch, getState) => {
     const { shoppingCart } = getState();
-    const newCart = shoppingCart.cart.filter(item => item.product.id !== productId);
+    
+    const newCart = shoppingCart.cart.filter(item => 
+      !(item.product.id === productId && item.product.color?.code === colorCode)
+    );
     
     dispatch(setCart(newCart));
     localStorage.setItem('cart', JSON.stringify(newCart));
     
-    console.log(' Product removed from cart');
+    console.log('🗑️ Product removed from cart');
   };
 };
 
-
-export const updateCartItemCount = (productId, count) => {
+// Hem ID hem renk koduna göre count güncelle
+export const updateCartItemCount = (productId, colorCode, count) => {
   return (dispatch, getState) => {
     const { shoppingCart } = getState();
     
     if (count <= 0) {
-      dispatch(removeFromCart(productId));
+      dispatch(removeFromCart(productId, colorCode));
       return;
     }
 
     const newCart = shoppingCart.cart.map(item =>
-      item.product.id === productId
+      item.product.id === productId && 
+      item.product.color?.code === colorCode
         ? { ...item, count }
         : item
     );
@@ -113,7 +118,6 @@ export const loadCartFromStorage = () => {
     }
   };
 };
-
 
 export const fetchPaymentMethods = () => {
   return async (dispatch) => {
@@ -162,7 +166,6 @@ export const addPaymentMethod = (cardData) => {
     }
   };
 };
-
 
 export const fetchAddresses = () => {
   return async (dispatch) => {
