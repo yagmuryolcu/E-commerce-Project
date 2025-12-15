@@ -26,6 +26,7 @@ export default function PageContent() {
     <main className="w-full">
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/shop/:gender/:categoryName/:categoryId"element={<Shop />}/>
         <Route path="/shop" element={<Shop/>} />
         <Route path="/productdetail/:productId" element={<ProductDetail />} /> 
         <Route path="/contact" element={<Contact />} />

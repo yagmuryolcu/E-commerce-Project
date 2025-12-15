@@ -1,4 +1,3 @@
-// CategoriesSection.jsx - Ana sayfada gösterilecek top 5 kategori
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import shopfilter1 from '../assets/shop-filter1.jpg';
@@ -42,15 +41,20 @@ export default function CategoriesSection() {
         if (!response.ok) {
           throw new Error('Failed to fetch categories');
         }
-        
+
         const data = await response.json();
         console.log('📂 Categories Response:', data);
         console.log('📂 First Category:', data[0]);
         
-        const sortedCategories = data.sort((a, b) => b.rating - a.rating).slice(0, 5);
+        // Rating'e göre sırala ve ilk 5'ini al
+        const sortedCategories = data
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 5);
+        
         setCategories(sortedCategories);
       } catch (error) {
-        console.error(' Error fetching categories:', error);
+        
+        // Fallback data
         setCategories([
           { id: 1, title: 'Erkek Giyim', code: 'men-clothing', img: '/assets/shop-filter1.jpg', rating: 4.5, gender: 'erkek' },
           { id: 2, title: 'Kadın Giyim', code: 'women-clothing', img: '/assets/shop-filter2.jpg', rating: 4.8, gender: 'kadın' },
@@ -67,23 +71,23 @@ export default function CategoriesSection() {
   }, []);
 
   const handleCategoryClick = (category) => {
-    //  shop/:gender/:categoryName/:categoryId
-    const gender = category.gender === 'erkek' ? 'erkek' : category.gender === 'kadın' ? 'kadin' : 'unisex';
+    // ✅ DEĞİŞEN KISİM
+    const gender = category.gender === 'kadın' ? 'kadin' : category.gender;
     navigate(`/shop/${gender}/${category.code}/${category.id}`);
   };
-
+  
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
+        <div className="flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-16" style={{ fontFamily: 'Montserrat' }}>
+    <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-[#252B42] mb-4">
           Shop by Category
@@ -93,10 +97,9 @@ export default function CategoriesSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {categories.map((category) => {
           const imageUrl = imageMapper[category.img] || shopfilter1;
-          console.log(' Category:', category.title, 'Image URL:', category.img, 'Mapped:', imageUrl);
           
           return (
             <div
@@ -104,36 +107,29 @@ export default function CategoriesSection() {
               onClick={() => handleCategoryClick(category)}
               className="relative group cursor-pointer overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300"
             >
-              <div className="relative h-64 md:h-80 overflow-hidden">
+              <div className="relative h-64 overflow-hidden">
                 <img
                   src={imageUrl}
                   alt={category.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
-                  <svg className="w-4 h-4 text-yellow-500 fill-current" viewBox="0 0 20 20">
-                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                  </svg>
-                  <span className="text-sm font-bold text-[#252B42]">{category.rating}</span>
+                {/* Rating Badge */}
+                <div className="absolute top-4 right-4 bg-[#23A6F0] text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                  ⭐ {category.rating}
                 </div>
-              </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-xl font-bold mb-2 group-hover:translate-x-2 transition-transform duration-300">
-                  {category.title}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-90 capitalize">
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                {/* Category Info */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-bold mb-1">
+                    {category.title}
+                  </h3>
+                  <p className="text-sm opacity-90 capitalize">
                     {category.gender}
-                  </span>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 group-hover:bg-[#23A6F0] transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                  </p>
                 </div>
               </div>
             </div>

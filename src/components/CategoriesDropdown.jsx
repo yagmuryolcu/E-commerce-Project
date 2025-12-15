@@ -13,7 +13,6 @@ export default function CategoriesDropdown() {
     const fetchCategories = async () => {
       try {
         const response = await fetch('http://localhost:9000/workintech/ecommerce/management/api/categories');
-        
         if (response.ok) {
           const data = await response.json();
           setCategories(data);
@@ -26,6 +25,7 @@ export default function CategoriesDropdown() {
     fetchCategories();
   }, []);
 
+  // Dropdown dışına tıklandığında kapat
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -38,11 +38,13 @@ export default function CategoriesDropdown() {
   }, []);
 
   const handleCategoryClick = (category) => {
-    const gender = category.gender === 'erkek' ? 'erkek' : category.gender === 'kadın' ? 'kadin' : 'unisex';
+    // ✅ DEĞİŞEN KISİM
+    const gender = category.gender === 'kadın' ? 'kadin' : category.gender;
     navigate(`/shop/${gender}/${category.code}/${category.id}`);
     setIsOpen(false);
   };
 
+  // Kategorileri cinsiyete göre grupla
   const groupedCategories = {
     kadın: categories.filter(cat => cat.gender === 'kadın'),
     erkek: categories.filter(cat => cat.gender === 'erkek'),
@@ -50,59 +52,62 @@ export default function CategoriesDropdown() {
   };
 
   return (
-    <div ref={dropdownRef} className="relative" style={{ fontFamily: 'Montserrat' }}>
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 text-[#737373] hover:text-[#23A6F0] transition-colors font-semibold"
       >
         Shop
-        <ChevronDown 
-          size={16} 
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-2xl border border-gray-100 min-w-[600px] z-50">
-          <div className="grid grid-cols-2 gap-6 p-6">
-            <div>
-              <h3 className="text-lg font-bold text-[#252B42] mb-4 pb-2 border-b border-gray-200">
+        <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-lg rounded-lg border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
+          
+          {/* Kadın Section */}
+          {groupedCategories.kadın.length > 0 && (
+            <div className="p-4 border-b border-gray-100">
+              <h3 className="text-sm font-bold text-[#252B42] mb-3 uppercase tracking-wide">
                 Kadın
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {groupedCategories.kadın.map(category => (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category)}
-                    className="w-full text-left px-3 py-2 text-[#737373] hover:bg-[#23A6F0]/10 hover:text-[#23A6F0] rounded transition-colors font-medium"
+                    className="w-full text-left px-3 py-2 text-[#737373] hover:bg-[#23A6F0]/10 hover:text-[#23A6F0] rounded transition-colors font-medium text-sm"
                   >
                     {category.title}
                   </button>
                 ))}
               </div>
             </div>
+          )}
 
-            <div>
-              <h3 className="text-lg font-bold text-[#252B42] mb-4 pb-2 border-b border-gray-200">
+          {/* Erkek Section */}
+          {groupedCategories.erkek.length > 0 && (
+            <div className="p-4 border-b border-gray-100">
+              <h3 className="text-sm font-bold text-[#252B42] mb-3 uppercase tracking-wide">
                 Erkek
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {groupedCategories.erkek.map(category => (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category)}
-                    className="w-full text-left px-3 py-2 text-[#737373] hover:bg-[#23A6F0]/10 hover:text-[#23A6F0] rounded transition-colors font-medium"
+                    className="w-full text-left px-3 py-2 text-[#737373] hover:bg-[#23A6F0]/10 hover:text-[#23A6F0] rounded transition-colors font-medium text-sm"
                   >
                     {category.title}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
+          )}
 
+          {/* Unisex Section */}
           {groupedCategories.unisex.length > 0 && (
-            <div className="border-t border-gray-200 p-6 pt-4">
-              <h3 className="text-sm font-bold text-[#737373] mb-3">
+            <div className="p-4">
+              <h3 className="text-sm font-bold text-[#252B42] mb-3 uppercase tracking-wide">
                 Unisex
               </h3>
               <div className="flex flex-wrap gap-2">

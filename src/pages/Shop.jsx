@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, fetchCategories } from '../store/actions/productActions';
 import { addToWishlist, removeFromWishlist } from '../store/actions/wishlistAction';
@@ -52,6 +52,8 @@ const fallbackImagesArray = [
 
 export default function Shop() {
   const dispatch = useDispatch();
+   const { categoryId } = useParams();
+  console.log('🔍 Category ID from URL:', categoryId);
   
   const { productList, total, fetchState, limit, offset } = useSelector(state => state.product);
   const wishlistItems = useSelector(state => state.wishlist.items);
@@ -63,9 +65,13 @@ export default function Shop() {
   
   // Ürün listesinin başlangıcı için ref
   const productSectionRef = useRef(null);
-  
-  // Backend'den 20 ürün geliyor ama sadece ilk 12'sini kullan
-  const limitedProducts = productList.slice(0, 12);
+
+
+const filteredProducts = categoryId 
+  ? productList.filter(product => product.categoryId === parseInt(categoryId))
+  : productList;
+
+  const limitedProducts = filteredProducts.slice(0, 12);
   
   console.log('========== REDUX STATE ==========');
   console.log('Backend Products:', productList.length);
@@ -84,18 +90,17 @@ export default function Shop() {
   const itemsPerPageDesktop = 12;
   const totalPagesDesktop = Math.ceil(limitedProducts.length / itemsPerPageDesktop);
   
-  useEffect(() => {
-    console.log('🟢 Component mounted - fetching data...');
-    dispatch(fetchCategories());
-    dispatch(fetchProducts(null, '', sortBy, limit, offset));
-  }, [dispatch]);
+ useEffect(() => {
+  console.log('🟢 Component mounted - fetching data...');
+  dispatch(fetchCategories());
+  dispatch(fetchProducts(categoryId || null, '', sortBy, limit, offset));
+}, [dispatch, categoryId, sortBy, limit, offset]); // Hepsini ekleyin
 
-  useEffect(() => {
-    console.log('🔵 Sort changed:', sortBy);
-    dispatch(fetchProducts(null, '', sortBy, limit, offset));
-    // Sort değiştiğinde sayfanın en başına scroll
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [sortBy, dispatch, limit, offset]);
+useEffect(() => {
+  console.log('🔵 Sort changed:', sortBy);
+  dispatch(fetchProducts(categoryId || null, '', sortBy, limit, offset)); // categoryId ekleyin
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, [sortBy, dispatch, categoryId, limit, offset]); // categoryId ekleyin
 
   const startIndexMobile = (currentPage - 1) * itemsPerPageMobile;
   const endIndexMobile = startIndexMobile + itemsPerPageMobile;
