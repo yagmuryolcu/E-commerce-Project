@@ -96,16 +96,19 @@ export default function Header() {
               ) : (
                 // Diğer sayfalar için mevcut yapı
                 <>
-                <div className="hover:text-blue-300 font-medium flex items-center gap-1 text-black md:text-[#23A6F0]">
-                <Link to="/login" className="flex items-center gap-1">
+                  <div className="hover:text-blue-300 font-medium flex items-center gap-1 text-black md:text-[#23A6F0]">
                   <User size={18} />
                   <span className="hidden md:flex items-center gap-1">
-                    <span className="hover:underline">Login</span>
+                    <Link to="/login" className="hover:underline">
+                      Login
+                    </Link>
                     <span>/</span>
-                    <span className="hover:underline">Register</span>
+                    <Link to="/register" className="hover:underline">
+                      Register
+                    </Link>
                   </span>
-                </Link>
-              </div>
+                 
+                </div>
                   <button className="hover:text-blue-300 text-black md:text-[#23A6F0]">
                     <Search size={20} />
                   </button>
@@ -167,10 +170,17 @@ export default function Header() {
                   
                   {/* Mavi İkonlar */}
                   <div className="flex flex-col items-center gap-6 mt-6">
-                    <Link to="/login" className="text-[#23A6F0] hover:text-blue-300 font-medium flex items-center gap-2 text-xl" onClick={() => setMobileMenuOpen(false)}>
-                      <User size={20} />
-                      <span>Login / Register</span>
-                    </Link>
+                   <div
+                        className="text-[#23A6F0] hover:text-blue-300 font-medium flex items-center gap-2 text-xl mt-6"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <User size={20} />
+
+                        <Link to="/login">Login</Link>
+                        <span>/</span>
+                        <Link to="/register">Register</Link>
+                       </div>
+
                     <button className="text-[#23A6F0] hover:text-blue-300">
                       <Search size={28} />
                     </button>

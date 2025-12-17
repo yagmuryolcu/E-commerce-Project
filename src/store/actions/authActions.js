@@ -12,7 +12,6 @@ export const SET_LANGUAGE = 'SET_LANGUAGE';
 
 const API_URL = 'http://localhost:9000/workintech/ecommerce/management/api';
 
-
 export const loginUser = (email, password, rememberMe) => async (dispatch) => {
   dispatch({ type: LOGIN_REQUEST });
   
@@ -22,46 +21,46 @@ export const loginUser = (email, password, rememberMe) => async (dispatch) => {
       password
     });
     
-    console.log(' Login Response:', response.data);
-    console.log(' Remember Me:', rememberMe);
+    console.log('✅ Login Response:', response.data);
+    console.log('🔒 Remember Me:', rememberMe);
     
-    const { token, username, email: userEmail, roleName } = response.data;
+    const { token, username, email: userEmail, roleName, userId } = response.data;
     
-    // ✅ kullanıcı bilgilerini storage'a kaydet (rememberme'ye göre localStorage veya sessionStorage)
     const storage = rememberMe ? localStorage : sessionStorage;
     const storageType = rememberMe ? 'localStorage' : 'sessionStorage';
     
     const userData = {
       username,
       email: userEmail,
-      roleName
+      roleName,
+      userId // ✅ userId eklendi
     };
     
+    // User bilgilerini kaydet
     storage.setItem('user', JSON.stringify(userData));
     console.log(`💾 User bilgileri ${storageType}'a kaydedildi`);
     console.log('📦 Stored user:', userData);
     
-    // ✅ Eğer token varsa onu da kaydet
+    // Token'ı kaydet
     if (token) {
       storage.setItem('token', token);
-      console.log(' Token da kaydedildi:', token.substring(0, 20) + '...');
-      axios.defaults.headers.common['Authorization'] = token;
+      console.log('🔑 Token kaydedildi:', token.substring(0, 20) + '...');
+      axios.defaults.headers.common['Authorization'] = token; // Direkt token, Bearer YOK
     } else {
-      console.warn(' Backend token dönmedi ');
+      console.warn('⚠️ Backend token dönmedi');
     }
     
     dispatch({
       type: LOGIN_SUCCESS,
       payload: {
-        username,
-        email: userEmail,
-        roleName
+        user: userData,
+        token: token // ✅ Token eklendi
       }
     });
     
     return { success: true };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     dispatch({
       type: LOGIN_FAILED,
       payload: error.response?.data?.message || 'Login failed'
@@ -73,13 +72,11 @@ export const loginUser = (email, password, rememberMe) => async (dispatch) => {
   }
 };
 
-
 export const verifyToken = () => async (dispatch) => {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   
-  // token yoksa, sadece user bilgilerini kontrol et
   if (!token) {
-    console.log('Token yok, session-based auth kullanılıyor');
+    console.log('ℹ️ Token yok, session-based auth kullanılıyor');
     return { success: true };
   }
 
@@ -95,7 +92,10 @@ export const verifyToken = () => async (dispatch) => {
       
       dispatch({
         type: SET_USER,
-        payload: userData
+        payload: {
+          user: userData,
+          token: token
+        }
       });
       
       if (userData.token) {
@@ -104,15 +104,15 @@ export const verifyToken = () => async (dispatch) => {
         axios.defaults.headers.common['Authorization'] = userData.token;
       }
       
-      console.log('Token verified, user logged in automatically');
+      console.log('✅ Token verified, user logged in automatically');
       return { success: true };
     }
   } catch (error) {
-    console.error(' Token verification failed:', error);
+    console.error('❌ Token verification failed:', error);
     
     const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (userStr) {
-      console.log(' Token verify edilemedi ama user bilgisi mevcut (session-based)');
+      console.log('ℹ️ Token verify edilemedi ama user bilgisi mevcut (session-based)');
       return { success: true };
     }
     
@@ -133,22 +133,23 @@ export const logout = () => (dispatch) => {
   sessionStorage.removeItem('user');
   delete axios.defaults.headers.common['Authorization'];
   dispatch({ type: LOGOUT });
+  console.log('👋 User logged out');
 };
 
 export const loadUserFromStorage = () => async (dispatch) => {
-  console.log(' loadUserFromStorage çalıştı');
+  console.log('📂 loadUserFromStorage çalıştı');
   
   let token = localStorage.getItem('token');
   let userStr = localStorage.getItem('user');
   
   if (!token && !userStr) {
-    console.log(' localStorage\'da veri yok, sessionStorage kontrol ediliyor...');
+    console.log('ℹ️ localStorage\'da veri yok, sessionStorage kontrol ediliyor...');
     token = sessionStorage.getItem('token');
     userStr = sessionStorage.getItem('user');
   } else if (token) {
-    console.log(' Token localStorage\'dan alındı');
+    console.log('✅ Token localStorage\'dan alındı');
   } else if (userStr) {
-    console.log(' User bilgisi localStorage\'dan alındı (token yok, session-based)');
+    console.log('ℹ️ User bilgisi localStorage\'dan alındı (token yok, session-based)');
   }
   
   if (userStr) {
@@ -156,37 +157,39 @@ export const loadUserFromStorage = () => async (dispatch) => {
       const user = JSON.parse(userStr);
       
       if (token) {
-        axios.defaults.headers.common['Authorization'] = token;
+        axios.defaults.headers.common['Authorization'] = token; // Direkt token
       }
       
       dispatch({
         type: SET_USER,
-        payload: user
+        payload: {
+          user: user,
+          token: token // ✅ Token eklendi
+        }
       });
       
-      console.log(' User loaded from storage:', user);
-      console.log(' Storage type:', localStorage.getItem('user') ? 'localStorage' : 'sessionStorage');
+      console.log('✅ User loaded from storage:', user);
+      console.log('📍 Storage type:', localStorage.getItem('user') ? 'localStorage' : 'sessionStorage');
       
       if (token) {
         const result = await dispatch(verifyToken());
         
         if (!result.success) {
-          console.warn(' Token expired or invalid, logging out...');
+          console.warn('⚠️ Token expired or invalid, logging out...');
           dispatch(logout());
         }
       } else {
-        console.log(' Session-based auth, token verification atlandı');
+        console.log('ℹ️ Session-based auth, token verification atlandı');
       }
       
     } catch (error) {
-      console.error(' Failed to load user from storage:', error);
+      console.error('❌ Failed to load user from storage:', error);
       dispatch(logout());
     }
   } else {
-    console.log(' Storage\'da user bilgisi bulunamadı');
+    console.log('ℹ️ Storage\'da user bilgisi bulunamadı');
   }
 };
-
 
 export const setUser = (user) => ({
   type: SET_USER,
@@ -197,7 +200,7 @@ export const fetchRoles = () => async (dispatch, getState) => {
   try {
     const { client } = getState();
     if (client?.roles?.length > 0) {
-      console.log('Roles already fetched, skipping...');
+      console.log('ℹ️ Roles already fetched, skipping...');
       return;
     }
 
@@ -208,10 +211,10 @@ export const fetchRoles = () => async (dispatch, getState) => {
       payload: response.data
     });
     
-    console.log(' Roles fetched from backend:', response.data);
+    console.log('✅ Roles fetched from backend:', response.data);
     
   } catch (error) {
-    console.error(' Error fetching roles:', error);
+    console.error('❌ Error fetching roles:', error);
   }
 };
 

@@ -11,6 +11,7 @@ import {
 
 const initialState = {
   user: null,
+  token:null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -32,7 +33,8 @@ export default function authReducer(state = initialState, action) {
     case SET_USER:
       return {
         ...state,
-        user: action.payload,
+         user: action.payload.user || action.payload,
+         token: action.payload.token || state.token, 
         isAuthenticated: true,
         loading: false,
         error: null
@@ -50,6 +52,7 @@ export default function authReducer(state = initialState, action) {
       return {
         ...state,
         user: null,
+         token: null,
         isAuthenticated: false,
         loading: false,
         error: null

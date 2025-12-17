@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { CreditCard, MapPin, Plus, Edit2, Trash2, Check, Loader } from 'lucide-react';
 import { Link , useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux'; 
+import { clearCart } from '../store/actions/shoppingCartActions';
+import { useDispatch } from 'react-redux';
+
 
 
 
@@ -9,6 +12,8 @@ import { useSelector } from 'react-redux';
 export default function AddressCardManager() {
     
 const navigate= useNavigate();
+const dispatch = useDispatch();
+
   const [activeTab, setActiveTab] = useState('address');
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
@@ -41,6 +46,10 @@ const navigate= useNavigate();
     expireYear: '',
     cvv: ''
   });
+
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [editingCard, setEditingCard] = useState(null);
+
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -230,6 +239,162 @@ const addressData = {
 
     }
   };
+const handleCardUpdate = async () => {
+  if (
+    !cardForm.cardNo ||
+    !cardForm.nameOnCard ||
+    !cardForm.expireMonth ||
+    !cardForm.expireYear
+  ) {
+    alert("Please fill in all required fields");
+    return;
+  }
+
+  const cleanCardNo = cardForm.cardNo.replace(/\s/g, "");
+
+  if (cleanCardNo.length !== 16 || !/^\d+$/.test(cleanCardNo)) {
+    alert("The card number must be 16 digits");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://localhost:9000/workintech/ecommerce/management/api/user/card/${editingCard}`,
+      {
+        method: "PUT",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardNo: cleanCardNo,
+          nameOnCard: cardForm.nameOnCard,
+          expireMonth: Number(cardForm.expireMonth),
+          expireYear: Number(cardForm.expireYear),
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Card could not be updated");
+    }
+
+    const updatedCard = await response.json();
+
+    setCards((prevCards) =>
+      prevCards.map((card) =>
+        card.id === editingCard
+          ? updatedCard.data ?? updatedCard
+          : card
+      )
+    );
+
+    setCardForm({
+      cardNo: "",
+      nameOnCard: "",
+      expireMonth: "",
+      expireYear: "",
+      cvv: "",
+    });
+
+    setEditingCard(null);
+    setShowCardForm(false);
+
+    alert("Card updated successfully!");
+  } catch (error) {
+    console.error("Error updating card:", error);
+    alert(`Failed to update card: ${error.message}`);
+  }
+};
+
+const handleEditCard = (card, e) => {
+  e.stopPropagation();
+
+  setEditingCard(card.id);
+
+  setCardForm({
+    cardNo: card.cardNo,
+    nameOnCard: card.nameOnCard,
+    expireMonth: card.expireMonth.toString(),
+    expireYear: card.expireYear.toString(),
+    cvv: "",
+  });
+
+  setShowCardForm(true);
+};
+
+
+const handleAddressUpdate = async () => {
+  if (!addressForm.title || !addressForm.name || !addressForm.surname || 
+      !addressForm.phone || !addressForm.city || !addressForm.district || !addressForm.address) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  try {
+    const cleanedPhone = addressForm.phone.replace(/\D/g, '');
+
+    if (cleanedPhone.length < 10 || cleanedPhone.length > 11) {
+      alert('Phone number must be 10 or 11 digits');
+      return;
+    }
+
+    const response = await fetch(
+      `http://localhost:9000/workintech/ecommerce/management/api/user/address/${editingAddress}`,
+      {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({...addressForm, phone: cleanedPhone})
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Address could not be updated');
+    }
+    
+    const updatedAddress = await response.json();
+    
+    // Liste güncelle
+    setAddresses(addresses.map(addr => 
+      addr.id === editingAddress ? (updatedAddress.data || updatedAddress) : addr
+    ));
+    
+    setAddressForm({
+      title: '', name: '', surname: '', phone: '',
+      city: '', district: '', neighborhood: '', address: '', zipCode: ''
+    });
+    setEditingAddress(null);
+    setShowAddressForm(false);
+    alert('Address updated successfully!');
+  } catch (error) {
+    console.error('Error updating address:', error);
+    alert(`Failed to update address: ${error.message}`);
+  }
+};
+
+// Edit butonuna tıklayınca
+const handleEditAddress = (address, e) => {
+  e.stopPropagation();
+  setEditingAddress(address.id);
+  setAddressForm({
+    title: address.title,
+    name: address.name,
+    surname: address.surname,
+    phone: address.phone,
+    city: address.city,
+    district: address.district,
+    neighborhood: address.neighborhood || '',
+    address: address.address,
+    zipCode: address.zipCode || ''
+  });
+  setShowAddressForm(true);
+};
+
+
+
+
 
   const handleDeleteAddress = async (id) => {
 if (!window.confirm('Are you sure you want to delete this address?')) return;
@@ -408,6 +573,8 @@ const handleOrderSubmit = async () => {
     };
 
     console.log('🎉 Order Success Data:', orderSuccessData);
+    dispatch(clearCart());
+
 
     navigate('/order-success', {
       state: { orderData: orderSuccessData },
@@ -575,19 +742,35 @@ const handleOrderSubmit = async () => {
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={handleAddressSubmit}
-                      className="flex-1 bg-blue-500 text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setShowAddressForm(false)}
-                      className="flex-1 bg-gray-200 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+  <button
+    onClick={editingAddress ? handleAddressUpdate : handleAddressSubmit}
+    className="flex-1 bg-blue-500 text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition-colors"
+  >
+    {editingAddress ? "Update" : "Save"}
+  </button>
+
+  <button
+    onClick={() => {
+      setShowAddressForm(false);
+      setEditingAddress(null);
+      setAddressForm({
+        title: "",
+        name: "",
+        surname: "",
+        phone: "",
+        city: "",
+        district: "",
+        neighborhood: "",
+        address: "",
+        zipCode: "",
+      });
+    }}
+    className="flex-1 bg-gray-200 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-300 transition-colors"
+  >
+    Cancel
+  </button>
+</div>
+
                 </div>
               </div>
             )}
@@ -629,25 +812,28 @@ const handleOrderSubmit = async () => {
                       {address.zipCode && ` ${address.zipCode}`}
                     </p>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
-                      title="Düzenle"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteAddress(address.id);
-                      }}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                      title="Sil"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                 <div className="flex gap-2 ml-4">
+  <button
+    onClick={(e) => handleEditAddress(address, e)}
+    className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+    title="Düzenle"
+  >
+    <Edit2 size={18} />
+  </button>
+
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      handleDeleteAddress(address.id);
+    }}
+    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+    title="Sil"
+  >
+    <Trash2 size={18} />
+  </button>
+</div>
+
+
                 </div>
               </div>
             ))}
@@ -736,20 +922,32 @@ const handleOrderSubmit = async () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={handleCardSubmit}
-                      className="flex-1 bg-blue-500 text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setShowCardForm(false)}
-                      className="flex-1 bg-gray-200 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                 <div className="flex gap-3 pt-4">
+  <button
+    onClick={editingCard ? handleCardUpdate : handleCardSubmit}
+    className="flex-1 bg-blue-500 text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition-colors"
+  >
+    {editingCard ? "Update" : "Save"}
+  </button>
+
+  <button
+    onClick={() => {
+      setShowCardForm(false);
+      setEditingCard(null);
+      setCardForm({
+        cardNo: "",
+        nameOnCard: "",
+        expireMonth: "",
+        expireYear: "",
+        cvv: "",
+      });
+    }}
+    className="flex-1 bg-gray-200 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-300 transition-colors"
+  >
+    Cancel
+  </button>
+</div>
+
                 </div>
               </div>
             )}
@@ -761,52 +959,61 @@ const handleOrderSubmit = async () => {
               </div>
             )}
 
-            {cards.map((card) => (
-              <div
-                key={card.id}
-                className={`bg-white rounded-lg shadow-sm p-6 cursor-pointer transition-all ${
-                  selectedCard === card.id
-                    ? 'ring-2 ring-blue-500 border-2 border-blue-500'
-                    : 'border border-gray-200 hover:shadow-md'
-                }`}
-                onClick={() => setSelectedCard(card.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg">
-                      <CreditCard size={32} className="text-white" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <p className="text-lg font-bold text-gray-900">{card.cardNo}</p>
-                        {selectedCard === card.id && (
-                          <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                            <Check size={14} />
-                            Seçili
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-gray-900 font-semibold mb-1">{card.nameOnCard}</p>
-                      <p className="text-gray-600 text-sm">
-                     Expiration: {card.expireMonth}/{card.expireYear}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCard(card.id);
-                      }}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                      title="Sil"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
+           {cards.map((card) => (
+  <div
+    key={card.id}
+    className={`bg-white rounded-lg shadow-sm p-6 cursor-pointer transition-all ${
+      selectedCard === card.id
+        ? 'ring-2 ring-blue-500 border-2 border-blue-500'
+        : 'border border-gray-200 hover:shadow-md'
+    }`}
+    onClick={() => setSelectedCard(card.id)}
+  >
+    <div className="flex items-start justify-between">
+      <div className="flex items-start gap-4 flex-1">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg">
+          <CreditCard size={32} className="text-white" />
+        </div>
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <p className="text-lg font-bold text-gray-900">{card.cardNo}</p>
+            {selectedCard === card.id && (
+              <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                <Check size={14} />
+                Seçili
               </div>
-            ))}
+            )}
+          </div>
+          <p className="text-gray-900 font-semibold mb-1">{card.nameOnCard}</p>
+          <p className="text-gray-600 text-sm">
+            Expiration: {card.expireMonth}/{card.expireYear}
+          </p>
+        </div>
+      </div>
+      {/* ✅ BUTONLAR BURAYA */}
+      <div className="flex gap-2 ml-4">
+        <button
+          onClick={(e) => handleEditCard(card, e)}
+          className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+          title="Düzenle"
+        >
+          <Edit2 size={18} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteCard(card.id);
+          }}
+          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+          title="Sil"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </div>
+  </div>
+))}
+      
           </div>
         )}
        <div className="mt-8 flex justify-end">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route , Navigate} from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import Shop from '../pages/Shop';
 import ProductDetail from '../components/ProductDetail';
@@ -21,7 +21,11 @@ import MyOrders from '../components/MyOrders';
 
 
 
+
 export default function PageContent() {
+
+    const isAuthenticated = localStorage.getItem('token');
+
   return (
     <main className="w-full">
       <Routes>
@@ -42,20 +46,13 @@ export default function PageContent() {
          <Route path="/blog" element={<BlogSection />} />
          <Route path="/user/address" element={<AddressCardManager />} />
           <Route path="/order-success" element={<OrderSuccessfull />} />
-           <Route path="/all-orders" element={<MyOrders />} />
 
 
 
-
-
-
-
-
-
-
-
-
-
+        <Route 
+          path="/all-orders" 
+          element={isAuthenticated ? <MyOrders /> : <Navigate to="/login" replace />} 
+        />
 
 
       </Routes>
